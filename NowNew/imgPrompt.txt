@@ -1,0 +1,27 @@
+배경 제거
+Take this image as the base character.
+Extract and preserve the person’s face, hairstyle, and overall identity.
+Generate a clean cut-out of the person against a plain white background, keeping the same pose.
+
+시선과 표정 바꾸기
+Make the subject look straight ahead and smile
+
+사진/영상 용어
+full shot
+full figure shot
+knee shot
+medium shot
+waist shot
+bust shot
+close shot 또는 up shot
+close up shot
+big close up shot
+extreme close up shot
+group shot
+over the shoulder shot
+long shot
+fixed shot
+moving shot
+insert shot
+reaction shot
+
