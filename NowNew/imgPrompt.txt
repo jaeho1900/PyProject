@@ -25,3 +25,21 @@ moving shot
 insert shot
 reaction shot
 
+
+# =====================
+# Git 전체 History 삭제
+# =====================
+
+# 1. 새 브랜치 생성 (기존 기록 없는 깨끗한 상태)
+# git checkout --orphan latest_branch
+ 
+# 2. 모든 파일을 스테이징 & 커밋
+# git add -A
+# git commit -m "Initial commit (history cleared)"
+ 
+# 3. 기존 main 브랜치 삭제 & 새 브랜치 이름 변경
+# git branch -D main       # 기존 main 삭제
+# git branch -m main       # latest_branch → main으로 변경
+ 
+# 4. GitHub 원격 저장소에 강제 푸시
+# git push origin main --force
