@@ -1,3 +1,0 @@
-@echo off
-echo Python 스크립트를 실행합니다...
-C:\Users\Administrator\miniforge3\python.exe d:\PyCode\lgnews.py
