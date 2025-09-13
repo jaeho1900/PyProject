@@ -1,6 +1,6 @@
 import os
 
-folder_path = r"D:\2025\3.Resource"
+folder_path = r"E:\123"
 
 # 해당 폴더가 존재하는지 확인
 if not os.path.exists(folder_path):
