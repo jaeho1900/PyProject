@@ -1,6 +1,6 @@
 # 리스트 = ['intra.h', 'intra.c', 'define.h', 'run.py']
-price_list = [32100, 32150, 32000, 32500]
+my_list = [100, 200, 400, 800]
 
-for i, data in enumerate(price_list):
-    print(len(price_list)-1-i, data)
+for i in range(len(my_list) - 1):
+    print(my_list[i+1] - my_list[i])
 

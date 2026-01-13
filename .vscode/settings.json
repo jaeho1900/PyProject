@@ -9,5 +9,8 @@
     "files.trimTrailingWhitespace": true,
 
     // 파일 끝에 빈 줄 추가(Git 사용시 유용)
-    "files.insertFinalNewline": true
+    "files.insertFinalNewline": true,
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python-envs.pythonProjects": []
 }
