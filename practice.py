@@ -1,11 +1,11 @@
-data = [
-    [ 2000,  3050,  2050,  1980],
-    [ 7500,  2050,  2050,  1980],
-    [15450, 15050, 15550, 14900]
-]
+ohlc = [["open", "high", "low", "close"],
+        [100, 110, 70, 100],
+        [200, 210, 180, 190],
+        [300, 310, 300, 310]]
 
-for i in data:
-    for j in i:
-        print(f"{j*1.00014}")
-    print("----")
+profit = 0
+for row in ohlc[1:]:
+    profit += (row[3] - row[0])
+print(profit)
+
 
