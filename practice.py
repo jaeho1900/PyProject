@@ -1,11 +1,7 @@
-def  print_max(a, b, c):
-    if a > b:
-        if a > c:
-            print(a)
-    elif b > c :
-            print(b)
-    else:
-        print(c)
+def  print_s(list):
+    print(sum(list)/len(list))
+
+print_s([1,2,3])
 
 
-print_max(13, 24, 109)
+
