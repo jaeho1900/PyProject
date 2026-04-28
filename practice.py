@@ -1,13 +1,23 @@
 import random
-class Account():
-    def __init__ (bank_name, accounter_name, account_num, balance):
-        self.bank_name = "sc은행"
-        self.accounter_name = accounter_name  # 3-2-6 랜덤
-        self.account_num = account_num
+
+class Account:
+    def __init__ (self, name, balance):
+        self.name = name
         self.balance = balance
-       random.randrange(100,1000)
-       random.randrange(10,100)
-       random.randrange(100000,1000000)
+        self.bank = "sc은행"
+        num1 = random.randint(0, 999)
+        num2 = random.randint(0, 99)
+        num3 = random.randint(0, 999999)
+        num1 = str(num1).zfill(3)
+        num2 = str(num2).zfill(2)
+        num3 = str(num3).zfill(6)
+        self.num = num1 + '-' + num2 + '-' + num3
+
+k = Account("tomy", 9990)
+k.name
+k.balance
+k.bank
+k.num
 
 
-print(f"str(random.randrange(100,1000))-str(random.randrange(10,100))-str(random.randrange(100000,1000000))")
+
