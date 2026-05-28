@@ -23,12 +23,18 @@ class Account:
         if income >= 1:
             self.balance += income
 
+    def withdraw(self, outcome):
+        if outcome > self.balance:
+            self.balance -= outcome
+            print(f"{outcome} 출금되었습니다. 잔액은 {self.balance}입니다")
+        else:
+            print("잔액이 부족합니다")
+
 k = Account("tomy", 9990)
-j = Account("jam", 9990)
 k.name
-j.name
+k.balance
 Account.account_count
 k.get_account_num()
-j.get_account_num()
 k.deposit(100000)
 k.balance
+k.withdraw(150000)
