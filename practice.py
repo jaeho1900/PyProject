@@ -30,6 +30,15 @@ class Account:
         else:
             print("잔액이 부족합니다")
 
+    def display_info(self):
+        print(f"은행이름: {self.bank}")
+        print(f"예금주: {self.name}")
+        print(f"계좌번호: {self.num}")
+        print(f"잔액: {self.balance:,}원")
+
+    def interest(self):
+        self.balance = self.balance * 1.01
+
 k = Account("tomy", 9990)
 k.name
 k.balance
@@ -38,3 +47,4 @@ k.get_account_num()
 k.deposit(100000)
 k.balance
 k.withdraw(150000)
+k.display_info()
