@@ -3,6 +3,7 @@ import random
 class Account:
     account_count = 0
     def __init__ (self, name, balance):
+        self.input_count = 0
         self.name = name
         self.balance = balance
         self.bank = "sc은행"
@@ -22,6 +23,9 @@ class Account:
     def deposit(self, income):
         if income >= 1:
             self.balance += income
+            self.input_count += 1
+            if self.input_count % 5 == 0:
+                self.balance = self.balance * 1.01
 
     def withdraw(self, outcome):
         if outcome > self.balance:
@@ -36,15 +40,21 @@ class Account:
         print(f"계좌번호: {self.num}")
         print(f"잔액: {self.balance:,}원")
 
-    def interest(self):
-        self.balance = self.balance * 1.01
-
 k = Account("tomy", 9990)
-k.name
+j = Account("my", 7770)
+
 k.balance
-Account.account_count
-k.get_account_num()
+j.balance
+
 k.deposit(100000)
-k.balance
-k.withdraw(150000)
-k.display_info()
+k.deposit(500000)
+k.deposit(300000)
+k.deposit(200000)
+k.deposit(100000)
+
+k.input_count
+
+j.deposit(1000)
+j.input_count
+
+Account.account_count
