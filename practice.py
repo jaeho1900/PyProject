@@ -40,19 +40,26 @@ class Account:
         print(f"계좌번호: {self.num}")
         print(f"잔액: {self.balance:,}원")
 
-k = Account("tomy", 9990)
-j = Account("my", 7770)
+# Account 클래스로부터 3개 이상 인스턴스를 생성하고 생성된 인스턴스를 리스트에 저장해보세요.
+
+k = Account("tomy", 10000)
+j = Account("kim", 20000)
+m = Account("sir", 80000)
 
 k.balance
 j.balance
+m.balance
 
-k.deposit(100000)
-k.deposit(500000)
-k.deposit(300000)
-k.deposit(200000)
-k.deposit(100000)
+customers = [k, j, m]
 
-k.input_count
+
+
+customers[2].balance
+
+
+
+Account.get_account_num()
+
 
 j.deposit(1000)
 j.input_count
