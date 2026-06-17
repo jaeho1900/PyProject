@@ -15,6 +15,8 @@ class Account:
         num3 = str(num3).zfill(6)
         self.num = num1 + '-' + num2 + '-' + num3
         Account.account_count +=1
+        self.deposit_book = []
+        self.withraw_book = []
 
     @classmethod
     def get_account_num(cls):
@@ -22,13 +24,18 @@ class Account:
 
     def deposit(self, income):
         if income >= 1:
+            self.deposit_book.append(income)
+            for i in self.deposit_book:
+                print(i, end = "\n")
             self.balance += income
             self.input_count += 1
             if self.input_count % 5 == 0:
+                self.deposit_book.append(self.balance * 1.01)
                 self.balance = self.balance * 1.01
 
     def withdraw(self, outcome):
         if outcome > self.balance:
+            self.withraw_book.append(outcome)
             self.balance -= outcome
             print(f"{outcome} 출금되었습니다. 잔액은 {self.balance}입니다")
         else:
@@ -40,28 +47,37 @@ class Account:
         print(f"계좌번호: {self.num}")
         print(f"잔액: {self.balance:,}원")
 
-# Account 클래스로부터 3개 이상 인스턴스를 생성하고 생성된 인스턴스를 리스트에 저장해보세요.
+    def deposit_history(self):
+        for i in self.deposit_book:
+            print(i, end = "\n")
 
-k = Account("tomy", 10000)
-j = Account("kim", 20000)
-m = Account("sir", 80000)
+# 입금과 출금 내역이 기록되도록 코드를 업데이트 하세요.
+# 입금 내역과 출금 내역을 출력하는 deposit_history와 withdraw_history 메서드를 추가하세요.
 
+k = Account("tomy", 10000000)
+j = Account("kim", 2000000)
+m = Account("sir", 800000)
+
+k.deposit(5000000)
 k.balance
-j.balance
-m.balance
+
+k.deposit_book
+k.deposit_history
+
 
 customers = [k, j, m]
 
+for a in customers:
+    if a.balance >= 1000000:
+        print(a.display_info(), end='\n\n')
 
+data = []
+k = Account("KIM", 10000000)
+l = Account("LEE", 10000)
+p = Account("PARK", 10000)
 
-customers[2].balance
+data.append(k)
+data.append(l)
+data.append(p)
 
-
-
-Account.get_account_num()
-
-
-j.deposit(1000)
-j.input_count
-
-Account.account_count
+print(data)
