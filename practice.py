@@ -15,7 +15,7 @@ class Account:
         num3 = str(num3).zfill(6)
         self.num = num1 + '-' + num2 + '-' + num3
         Account.account_count +=1
-        self.deposit_book = []
+        self.deposit_book = [balance]
         self.withdraw_book = []
 
     @classmethod
@@ -25,20 +25,20 @@ class Account:
     def deposit(self, income):
         if income >= 1:
             self.deposit_book.append(income)
+            print(f"{income:,}원 입금되었습니다.")
             self.balance += income
             self.input_count += 1
             if self.input_count % 5 == 0:
-                self.deposit_book.append(self.balance * 1.01)
-                print(f"{income}원 입금되었습니다.")
-                print(f"5회차 이자 {self.balance * 0.01}원이 입금되었습니다")
-                print(f"잔액은 {self.balance * 1.01}입니다")
-                self.balance = self.balance * 1.01
+                self.deposit_book.append(self.balance * 0.01)
+                print(f"{self.input_count}회차 이자 {self.balance * 0.01:,}원이 입금되었습니다")
+                self.balance += self.balance * 0.01
+                print(f"잔액은 {self.balance:,}입니다")
 
     def withdraw(self, outcome):
         if outcome <= self.balance:
             self.withdraw_book.append(outcome)
             self.balance -= outcome
-            print(f"{outcome}원 출금되었습니다. 잔액은 {self.balance}원 입니다")
+            print(f"{outcome:,}원 출금되었습니다. 잔액은 {self.balance:,}원 입니다")
         else:
             print("잔액이 부족합니다")
 
@@ -50,17 +50,16 @@ class Account:
 
     def deposit_history(self):
         for i in self.deposit_book:
-            print(i, end = "\n")
+            print(f"{i:,}원", end = "\n")
+        print(f"잔액은 {self.balance:,}원 입니다")
 
     def withdraw_history(self):
         for i in self.withdraw_book:
-            print(i, end = "\n")
+            print(f"{i:,}원", end = "\n")
+        print(f"잔액은 {self.balance:,}원 입니다")
 
 # 입금과 출금 내역이 기록되도록 코드를 업데이트 하세요.
 # 입금 내역과 출금 내역을 출력하는 deposit_history와 withdraw_history 메서드를 추가하세요.
-
-# 장부에 최초입금 기입 필요
-# 이자입금된 총액이 장부에 오기입 수정
 
 k = Account("tomy", 10000000)
 j = Account("kim", 2000000)
@@ -72,29 +71,9 @@ k.deposit(30000)
 k.deposit(40000)
 k.deposit(50000)
 k.deposit(60000)
-
-k.deposit_book
 k.deposit_history()
 
 k.withdraw(89990)
-k.balance
-
 k.withdraw_history()
 
-
-customers = [k, j, m]
-
-for a in customers:
-    if a.balance >= 1000000:
-        print(a.display_info(), end='\n\n')
-
-data = []
-k = Account("KIM", 10000000)
-l = Account("LEE", 10000)
-p = Account("PARK", 10000)
-
-data.append(k)
-data.append(l)
-data.append(p)
-
-print(data)
+k.balance
