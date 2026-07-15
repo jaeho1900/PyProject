@@ -17,3 +17,11 @@ data3 = [['삼성전자','005930','15.79'], ['NAVER','035420','55.82']]
 df3 = pd.DataFrame(data3, columns=["종목명", "종목코드", "PER"])
 df3.to_csv("C:/Users/Administrator/Desktop/매수종목.csv", index=False, encoding="cp949")
 
+df = pd.read_csv("C:/Users/Administrator/Desktop/매수종목1.txt", dtype="str", sep='\t', header=None)
+lt = df.values.flatten().tolist()
+
+
+f = []
+for i, j in df.iterrows():
+    f.extend(j.tolist())
+
