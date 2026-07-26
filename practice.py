@@ -1,27 +1,19 @@
-# 294 파일 읽기
-# 바탕화면에 생성한 '매수종목1.txt' 파일을 읽은 후 종목코드를 리스트에 저장해보세요.
+# 296 예외처리
+# 문자열 PER (Price to Earning Ratio) 값을 실수로 변환할 때 에러가 발생합니다. 예외처리를 통해 에러가 발생하는 PER은 0으로 출력하세요.
 
-# 295 파일 읽기
-# 바탕화면에 생성한 '매수종목2.txt' 파일을 읽은 후 종목코드와 종목명을 딕셔너리로 저장해보세요. 종목명을 key로 종목명을 value로 저장합니다.
+# per = ["10.31", "", "8.00"]
+
+# for i in per:
+#     print(float(i))
 
 import pandas as pd
-data = ['005930', '005380', '035420']
-df = pd.DataFrame(data)
-df.to_csv("C:/Users/Administrator/Desktop/매수종목1.txt", sep='\t', index=False, header=False)
 
-data2 = [['005930', '삼성전자'], ['005380', '현대차'], ['035420', 'NAVER']]
-df2 = pd.DataFrame(data2)
-df2.to_csv("C:/Users/Administrator/Desktop/매수종목2.txt", sep='\t', index=False, header=False)
+df = pd.read_csv("d:/매수종목2.txt", dtype="str", sep='\t', header=None)
 
-data3 = [['삼성전자','005930','15.79'], ['NAVER','035420','55.82']]
-df3 = pd.DataFrame(data3, columns=["종목명", "종목코드", "PER"])
-df3.to_csv("C:/Users/Administrator/Desktop/매수종목.csv", index=False, encoding="cp949")
+dic1 = dict(zip(df[0], df[1]))
+print(dic1)
 
-df = pd.read_csv("C:/Users/Administrator/Desktop/매수종목1.txt", dtype="str", sep='\t', header=None)
-lt = df.values.flatten().tolist()
-
-
-f = []
-for i, j in df.iterrows():
-    f.extend(j.tolist())
-
+dic2 = {}
+for i in range(len(df)):
+    dic2[df.iloc[i,0]] = df.iloc[i,1]
+print(dic2)
