@@ -1,15 +1,20 @@
-a = 2
-b = 3.14
-c = a+b
-print(a)
-print(b)
-print(c)
-print(f'a의 값은 {a}입니다.')
-print(f'{c:.2f}')
-print('%.2f'%(c))
-print('{:.2f}'.format(c))
-d = 1e3
-e = 1e-3
-print(b**a)
-a==2
-a=3
+h = [168,170,168,173,168, 168]
+h1 = h
+k = 0
+L = list()
+L1 = list()
+n = 168
+for i in range(h1.count(n)):
+    idx = h1.index(n)
+    k += idx
+    L.append(k)
+    k += 1
+    h1 = h1[idx+1:]
+print(L)
+
+
+for i, j in enumerate(h):
+    print(i ,j)
+    if j == n:
+        L1.append(i)
+
