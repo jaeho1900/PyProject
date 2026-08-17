@@ -56,3 +56,21 @@ output_parquet = (
 combined_df.to_parquet(output_parquet, index=False)
 print(f"- 통합 Parquet 파일 저장 완료: {output_parquet}")
 
+
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+# Pandas DataFrame -> PyArrow Table 변환
+df = pd.DataFrame({"ID": [1, 2, 3], "값": [10.5, 20.1, 30.8]})
+table = pa.Table.from_pandas(df)
+
+# Parquet 파일로 저장
+pq.write_table(table, "data_arrow.parquet", compression="snappy")
+
+# Parquet 파일 읽기
+read_table = pq.read_table("data_arrow.parquet")
+
+# PyArrow Table -> Pandas DataFrame으로 다시 변환
+df_back = read_table.to_pandas()
+
