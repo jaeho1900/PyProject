@@ -1,76 +1,52 @@
 import pandas as pd
+# import pyarrow as pa
+# import pyarrow.parquet as pq
 
-# 1. 데이터프레임 생성 (예: 특수문자와 쉼표가 섞인 적요 데이터)
-data = {
-    "거래ID": [101, 102],
-    "금액": [15000, 23000],
-    "적요": ["교통비, 택시(심야)", '도서 구입 "데이터 분석"\n(배송비 포함)'],
-}
-df = pd.DataFrame(data)
+from_file = r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
+to_file = r"C:\Users\Administrator\Desktop\to_오피스_연구소_엣지_작업데이터_통합.parquet"
 
-# 2. Parquet 파일로 저장
-df.to_parquet("transactions.parquet", index=False)
+df = pd.read_parquet(from_file)
+# df_subset = pd.read_parquet(from_file, columns=["거래ID", "금액"])
 
-# 3. 전체 데이터 불러오기
-output_parquet = (
-    r"C:\Users\Administrator\Desktop\오피스_연구소_작업데이터_통합.parquet"
+unique_list = df['운영센터명'].unique().tolist()
+print(unique_list)
+
+filtered_df = df[df["운영센터명"] == "건와빌딩"]
+filtered_df.to_excel(r"C:\Users\Administrator\Desktop\to_건와빌딩.xlsx")
+
+# df.to_parquet(to_file, index=False)
+
+# 그룹핑 기준 컬럼 리스트 정의 (실제 줄바꿈 '\n' 반영)
+group_cols = [
+    "서비스\nLV1",
+    "서비스\nLV2",
+    "층",
+    "개별설비/장소",
+    "작업명",
+    "통합작업",
+    "주기",
+]
+
+# 그룹별 평균 및 표준편차 계산
+result = (
+    filtered_df.groupby(group_cols)["총작업\n시간(분)"]
+    .agg(평균="mean", 표준편차="std")
+    .reset_index()
 )
 
-df_loaded = pd.read_parquet(output_parquet)
+# (선택) 데이터가 1개여서 표준편차가 NaN으로 나오는 경우 0으로 채우기
+result["표준편차"] = result["표준편차"].fillna(0)
 
-# 4. [속도 최적화] 특정 컬럼만 골라서 초고속으로 불러오기
-df_subset = pd.read_parquet("transactions.parquet", columns=["거래ID", "금액"])
+# 4. 결과 확인 및 저장
+print(result.head())
+# result.to_excel("그룹별_작업시간_통계.xlsx", index=False)
+# result.to_parquet("그룹별_작업시간_통계.parquet", index=False)
 
-
-
-
-# -------------------------------------------------------------
-import pandas as pd
-
-# 1. 파일 경로 설정 (Windows 경로 역슬래시 에러 방지를 위해 r을 붙임)
-file_path = r"C:\Users\Administrator\Desktop\오피스, 연구소 엣지 작업데이터_260811.xlsx"
-
-# 2. 모든 시트를 딕셔너리 형태로 한 번에 읽어오기
-#    engine='calamine'을 설치하여 사용하면 읽는 속도가 훨씬 빨라집니다.
-all_sheets = pd.read_excel(file_path, sheet_name=None, engine="calamine")
-
-# 3. '개요' 시트를 제외한 나머지 시트들의 DataFrame 리스트 생성
-dfs = []
-for sheet_name, df in all_sheets.items():
-    # '개요' 시트 제외 (시트 이름 앞뒤 공백 방지를 위해 .strip() 적용)
-    if sheet_name.strip() != "개요":
-        dfs.append(df)
-
-# 4. 하나의 데이터프레임으로 수직 병합 (첫 행의 동일한 컬럼 기준으로 결합)
-combined_df = pd.concat(dfs, ignore_index=True)
-
-# 5. 결과 확인
-print("병합 완료!")
-print(f"- 병합된 전체 데이터 크기: {combined_df.shape[0]}행 x {combined_df.shape[1]}열")
-print(combined_df.head())
-
-# 6. [권장] 이후 빠른 작업 및 적요란 깨짐 방지를 위해 Parquet 파일로 저장
-output_parquet = (
-    r"C:\Users\Administrator\Desktop\오피스_연구소_작업데이터_통합.parquet"
-)
-combined_df.to_parquet(output_parquet, index=False)
-print(f"- 통합 Parquet 파일 저장 완료: {output_parquet}")
+unique_list = df['작업명'].unique().tolist()
+print(unique_list)
 
 
-import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 
-# Pandas DataFrame -> PyArrow Table 변환
-df = pd.DataFrame({"ID": [1, 2, 3], "값": [10.5, 20.1, 30.8]})
-table = pa.Table.from_pandas(df)
 
-# Parquet 파일로 저장
-pq.write_table(table, "data_arrow.parquet", compression="snappy")
 
-# Parquet 파일 읽기
-read_table = pq.read_table("data_arrow.parquet")
-
-# PyArrow Table -> Pandas DataFrame으로 다시 변환
-df_back = read_table.to_pandas()
 
