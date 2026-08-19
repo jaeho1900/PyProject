@@ -1,52 +1,34 @@
 import pandas as pd
-# import pyarrow as pa
-# import pyarrow.parquet as pq
 
-from_file = r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
-to_file = r"C:\Users\Administrator\Desktop\to_오피스_연구소_엣지_작업데이터_통합.parquet"
+file_path = r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
+df = pd.read_parquet(file_path)
 
-df = pd.read_parquet(from_file)
-# df_subset = pd.read_parquet(from_file, columns=["거래ID", "금액"])
+# 3. '주기' 컬럼 결측치 및 빈 문자열을 '수시'로 채우기
+df["주기"] = df["주기"].fillna("수시").replace(r"^\s*$", "수시", regex=True)
 
-unique_list = df['운영센터명'].unique().tolist()
-print(unique_list)
+# 4. '서비스LV1'이 '시설'인 데이터 필터링
+df_filtered = df[df["서비스LV1"] == "시설"].copy()
 
-filtered_df = df[df["운영센터명"] == "건와빌딩"]
-filtered_df.to_excel(r"C:\Users\Administrator\Desktop\to_건와빌딩.xlsx")
+# 5. '총작업시간(분)' 컬럼이 숫자가 아닐 경우를 대비해 수치형 변환
+df_filtered["총작업시간(분)"] = pd.to_numeric(
+    df_filtered["총작업시간(분)"], errors="coerce"
+)
 
-# df.to_parquet(to_file, index=False)
-
-# 그룹핑 기준 컬럼 리스트 정의 (실제 줄바꿈 '\n' 반영)
-group_cols = [
-    "서비스\nLV1",
-    "서비스\nLV2",
-    "층",
-    "개별설비/장소",
-    "작업명",
-    "통합작업",
-    "주기",
-]
-
-# 그룹별 평균 및 표준편차 계산
+# 6. 그룹화 및 통계치(합계, 중앙값, 데이터 개수) 산출
 result = (
-    filtered_df.groupby(group_cols)["총작업\n시간(분)"]
-    .agg(평균="mean", 표준편차="std")
+    df_filtered.groupby(["운영센터명", "서비스LV2", "주기"])["총작업시간(분)"]
+    .agg(합계="sum", 중앙값="median", 데이터갯수="count")
     .reset_index()
 )
 
-# (선택) 데이터가 1개여서 표준편차가 NaN으로 나오는 경우 0으로 채우기
-result["표준편차"] = result["표준편차"].fillna(0)
+# 7. 결과 확인
+print(result)
 
-# 4. 결과 확인 및 저장
-print(result.head())
-# result.to_excel("그룹별_작업시간_통계.xlsx", index=False)
-# result.to_parquet("그룹별_작업시간_통계.parquet", index=False)
-
-unique_list = df['작업명'].unique().tolist()
-print(unique_list)
+# 필요 시 엑셀 또는 CSV로 저장
+result.to_excel(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과.xlsx", index=False)
+# result.to_parquet(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과.parquet', index=False)
 
 
-
-
-
+df[(df["주기"] == "6년")]
+df[(df["운영센터명"] == "YTN상암PFM") & (df["주기"] == "6년")]
 
