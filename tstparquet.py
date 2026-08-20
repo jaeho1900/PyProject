@@ -19,7 +19,7 @@ df_filtered = df_filtered[df_filtered["총작업시간(분)"].notna()]
 # 그룹핑 및 통계치(합계, 중앙값, 데이터 개수) 산출
 result = (
     df_filtered.groupby(["운영센터명", "서비스LV2", "주기"])["총작업시간(분)"]
-    .agg(합계="sum", 중앙값="median", 데이터갯수="count")
+    .agg(합계="sum", 평균값="mean", 중앙값="median", 데이터갯수="count")
     .reset_index()
 )
 
