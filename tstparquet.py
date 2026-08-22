@@ -1,8 +1,11 @@
 import pandas as pd
 import numpy as np
 
+# 메모리 부족하면 "필요한 컬럼만" 선택하여 고속으로 로드
+# df_subset = pd.read_parquet("data.parquet", columns=["거래ID", "금액"])
+
 file_path = r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
-df = pd.read_parquet(file_path)
+df = pd.read_parquet(file_path, index=False, engine="pyarrow", dtype_backend="pyarrow")
 
 # 정제 ----------------------
 
@@ -43,10 +46,7 @@ result = (
 
 # 저장 ----------------------
 result.to_excel(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과1.xlsx", index=False)
-# result.to_parquet(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과.parquet', index=False)
+# result.to_parquet(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과.parquet', index=False, engine="pyarrow", compression="snappy")
 
 # 내용 확인 ----------------------
 df[(df["주기"] == "6년")]
-
-
-
