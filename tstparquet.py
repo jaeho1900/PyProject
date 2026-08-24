@@ -1,14 +1,12 @@
 import pandas as pd
 import numpy as np
-
-# 메모리 부족하면 "필요한 컬럼만" 선택하여 고속으로 로드
-# df_subset = pd.read_parquet("data.parquet", columns=["거래ID", "금액"])
+from datetime import datetime
 
 file_path = r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
-df = pd.read_parquet(file_path, index=False, engine="pyarrow", dtype_backend="pyarrow")
+df = pd.read_parquet(file_path, engine="pyarrow", dtype_backend="pyarrow")
+# df_subset = pd.read_parquet(file_path, columns=["서비스LV1", "서비스LV2"])
 
 # 정제 ----------------------
-
 # 특정 운영센터 제외
 exclude_centers = ["마포", "에너지솔루션과천연구소"]
 df = df[~df["운영센터명"].isin(exclude_centers)].reset_index(drop=True)
@@ -34,7 +32,7 @@ df = df[df["서비스LV1"] == "시설"]
 df = df[df["총작업시간(분)"].notna()]
 
 # 점검 파일 생성
-# df.to_excel(r"C:\Users\Administrator\Desktop\seven_facility.xlsx", index=False)
+# df.to_excel(rf"C:\Users\Administrator\Desktop\seven_facility_{datetime.now().strftime('%y%m%d%H%M%S')}.xlsx", index=False)
 
 # 통계 ----------------------
 # 그룹핑 및 통계치(합계, 중앙값, 데이터 개수) 산출
@@ -45,8 +43,8 @@ result = (
 )
 
 # 저장 ----------------------
-result.to_excel(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과1.xlsx", index=False)
-# result.to_parquet(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과.parquet', index=False, engine="pyarrow", compression="snappy")
+result.to_excel(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과_{datetime.now().strftime('%y%m%d%H%M%S')}.xlsx", index=False)
+# result.to_parquet(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과_{datetime.now().strftime('%y%m%d%H%M%S')}.parquet', index=False, engine="pyarrow", compression="snappy")
 
 # 내용 확인 ----------------------
 df[(df["주기"] == "6년")]
