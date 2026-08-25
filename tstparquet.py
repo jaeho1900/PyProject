@@ -2,6 +2,34 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
+
+# 탐색
+kto_201901.head()
+kto_201901.tail()
+kto_201901.info()
+kto_201901.describe()
+# size()    : 각 그룹의 전체 행의 갯수
+# count()   : 각 그룹의 각 열에서 NaN이 아닌 데이터의 수
+# nunique() : 행의 유니크한 갯수
+# sum       : 합
+# mean()    : 평균
+# max()     : 최댓값
+# min()     : 최솟값
+# std()     : 표준편차
+# var()     : 분산
+
+
+# 이상치
+# 시각화
+
+
+
+
+
+
+
+
+
 file_path = r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
 df = pd.read_parquet(file_path, engine="pyarrow", dtype_backend="pyarrow")
 # df_subset = pd.read_parquet(file_path, columns=["서비스LV1", "서비스LV2"])
@@ -26,6 +54,17 @@ df['분류'] = np.select(conditions, choices, default='기타')
 
 # "서비스LV1" == "시설" 필터링
 df = df[df["서비스LV1"] == "시설"]
+
+# 데이터 확인 ----------------------
+print(df.head())
+df.info()
+df.columns
+df.describe()
+df[df["총작업시간(분)"] == 0]
+df[(df["총작업시간(분)"] < 0.0334) & (df["총작업시간(분)"] > 0)]
+df[df["총작업시간(분)"] > 30000]
+df[df["총작업시간(분)"].isna()]
+
 
 # "총작업시간(분)"" == NaN 필터링
 # df["총작업시간(분)"].isna().sum()
