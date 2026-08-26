@@ -4,38 +4,16 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# -------------------------------------------------------------------------
-# 1. 데이터 로드 및 전처리
-# -------------------------------------------------------------------------
 file_path = (
     r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
 )
 df = pd.read_parquet(file_path)
 
-exclude_centers = ["마포", "에너지솔루션과천연구소"]
-df = df[~df["운영센터명"].isin(exclude_centers)].reset_index(drop=True)
-
-# 빈칸 -> "수시"
-df["주기"] = df["주기"].fillna("수시").replace(r"^\s*$", "수시", regex=True)
-
-# "서비스LV1" == "시설" 필터링
-df = df[df["서비스LV1"] == "시설"]
-
 # 컬럼명 수치형 변환
 df["총작업시간(분)"] = pd.to_numeric(df["총작업시간(분)"], errors="coerce")
 df = df.dropna(subset=["총작업시간(분)"]).reset_index(drop=True)
 
-# '분류' 컬럼 생성 (오피스 / 연구소)
-office_list = ["트윈타워", "서울역빌딩", "YTN상암PFM", "건와빌딩"]
-lab_list = ["전자양재R&D캠퍼스", "전자가산R&D캠퍼스", "전자서초R&D"]
-
-conditions = [df["운영센터명"].isin(office_list), df["운영센터명"].isin(lab_list)]
-choices = ["오피스", "연구소"]
-df["분류"] = np.select(conditions, choices, default="기타")
-
-# -------------------------------------------------------------------------
-# 2. [집계 1] 운영센터 및 건물 유형별 분석
-# -------------------------------------------------------------------------
+# [집계 1] 운영센터 및 건물 유형별 분석
 center_summary = (
     df.groupby(["분류", "운영센터명"])
     .agg(

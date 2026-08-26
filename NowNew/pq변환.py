@@ -40,6 +40,13 @@ conditions = [
 choices = ['오피스', '연구소']
 df['분류'] = np.select(conditions, choices, default='기타')
 
-df.to_parquet(r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합1.parquet", index=False, engine="pyarrow", compression="snappy")
+# ---------------------
 
+# 필터링 ----------------------
+df = df[df["서비스LV1"] == "시설"]    # 검침,보수,운전,점검,시설순찰,진단[Patrol],예방정비,법정검사/신고
+# df[df["서비스LV1"] == "관리"]       # 센터업무 > 작업명 ==> 데이터 누락/오류분 과다
+# df[df["서비스LV1"] == "PM"]        # 회계관리 > 작업명 ==> YTN센터 1개센터만 DATA 존재
+df = df[~df["총작업시간(분)"].isna()]
+
+df.to_parquet(r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합1.parquet", index=False, engine="pyarrow", compression="snappy")
 
