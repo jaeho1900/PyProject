@@ -1,89 +1,60 @@
-import pandas as pd
+# ----------------------
+# atG 작업관리 분석
+# ----------------------
+
 import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from datetime import datetime
 
-
-# 탐색
-kto_201901.head()
-kto_201901.tail()
-kto_201901.info()
-kto_201901.describe()
-# size()    : 각 그룹의 전체 행의 갯수
-# count()   : 각 그룹의 각 열에서 NaN이 아닌 데이터의 수
-# nunique() : 행의 유니크한 갯수
-# sum       : 합
-# mean()    : 평균
-# max()     : 최댓값
-# min()     : 최솟값
-# std()     : 표준편차
-# var()     : 분산
-
-
-# 이상치
-# 시각화
-
-
-
-
-
-
-
-
+# 호출 ----------------------
 
 file_path = r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
 df = pd.read_parquet(file_path, engine="pyarrow", dtype_backend="pyarrow")
+
 # df_subset = pd.read_parquet(file_path, columns=["서비스LV1", "서비스LV2"])
 
-# 정제 ----------------------
-# 특정 운영센터 제외
-exclude_centers = ["마포", "에너지솔루션과천연구소"]
-df = df[~df["운영센터명"].isin(exclude_centers)].reset_index(drop=True)
+# 파악 ----------------------
 
-# 빈칸 -> "수시"
-df["주기"] = df["주기"].fillna("수시").replace(r"^\s*$", "수시", regex=True)
-
-# "오피스", "연구소" 분류 추가
-office_list = ['트윈타워', '서울역빌딩', 'YTN상암PFM', '건와빌딩']
-lab_list = ['전자양재R&D캠퍼스', '전자가산R&D캠퍼스', '전자서초R&D']
-conditions = [
-    df['운영센터명'].isin(office_list),
-    df['운영센터명'].isin(lab_list)
-]
-choices = ['오피스', '연구소']
-df['분류'] = np.select(conditions, choices, default='기타')
-
-# "서비스LV1" == "시설" 필터링
-df = df[df["서비스LV1"] == "시설"]
-
-# 데이터 확인 ----------------------
-print(df.head())
-df.info()
 df.columns
-df.describe()
+df.info()
+df.count()   # NaN이 아닌 데이터의 수
+
+df.head()
 df[df["총작업시간(분)"] == 0]
-df[(df["총작업시간(분)"] < 0.0334) & (df["총작업시간(분)"] > 0)]
-df[df["총작업시간(분)"] > 30000]
 df[df["총작업시간(분)"].isna()]
 
+df.describe()
+df[(df["총작업시간(분)"] < 0.68) | (df["총작업시간(분)"] > 40)]
 
-# "총작업시간(분)"" == NaN 필터링
-# df["총작업시간(분)"].isna().sum()
-df = df[df["총작업시간(분)"].notna()]
+# 필터링 파악 ----------------------
 
-# 점검 파일 생성
-# df.to_excel(rf"C:\Users\Administrator\Desktop\seven_facility_{datetime.now().strftime('%y%m%d%H%M%S')}.xlsx", index=False)
+df["서비스LV1"].unique()
 
-# 통계 ----------------------
-# 그룹핑 및 통계치(합계, 중앙값, 데이터 개수) 산출
+re = df[df["서비스LV1"] == "시설"]  # '검침', '보수', '운전', '점검', '시설순찰', '진단[Patrol]', '예방정비', '법정검사/신고'
+re = df[df["서비스LV1"] == "관리"]  # 센터업무
+re = df[df["서비스LV1"] == "PM"]   # 회계관리(YTN 만 존재)
+re["서비스LV2"].unique()
+re["작업명"].unique()
+re["운영센터명"].unique()
+re["총작업시간(분)"].describe()
+re["총작업시간(분)"].sum()
+
+df = df[df["서비스LV1"].isin(["시설", "관리"])]
+
+# 그룹링 파악 ----------------------
+
 result = (
     df.groupby(["분류", "운영센터명", "서비스LV2", "주기"])["총작업시간(분)"]
     .agg(합계="sum", 평균값="mean", 중앙값="median", 데이터갯수="count")
     .reset_index()
 )
 
+
+# 시각화 ----------------------
+
 # 저장 ----------------------
 result.to_excel(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과_{datetime.now().strftime('%y%m%d%H%M%S')}.xlsx", index=False)
-# result.to_parquet(r"C:\Users\Administrator\Desktop\시설_작업시간_분석결과_{datetime.now().strftime('%y%m%d%H%M%S')}.parquet', index=False, engine="pyarrow", compression="snappy")
 
-# 내용 확인 ----------------------
-df[(df["주기"] == "6년")]
