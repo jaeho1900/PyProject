@@ -1,48 +1,50 @@
-# ----------------------
+# ======================
 # atG 작업관리 분석
-# ----------------------
+# ======================
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from datetime import datetime
+
+# 필터링 ----------
+# df[df["서비스LV1"] == "시설"]   # 검침,보수,운전,점검,시설순찰,진단[Patrol],예방정비,법정검사/신고
+# df[df["서비스LV1"] == "관리"]   # 센터업무 > 작업명 ==> 데이터 누락/오류분 과다
+# df[df["서비스LV1"] == "PM"]     # 회계관리 > 작업명 ==> YTN센터 1개센터만 DATA 존재
+# df[~df["총작업시간(분)"].isna()] # 미운전설비, 작업발행오류 등
+
+# 컬럼명 정제 ----------
+# df.columns = (
+#     df.columns
+#     .astype(str)
+#     .str.replace("\n", "", regex=False)
+#     .str.strip()
+# )
 
 # 호출 ----------------------
-file_path = r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
+file_path = r"C:\Users\Administrator\Desktop\●통합데이터.parquet"
 df = pd.read_parquet(file_path, engine="pyarrow", dtype_backend="pyarrow")
-# size: 453729 x 30
-
-# df_subset = pd.read_parquet(file_path, columns=["서비스LV1", "서비스LV2"])
-
-# # 필터링 ----------------------
-# df = df[df["서비스LV1"] == "시설"]    # 검침,보수,운전,점검,시설순찰,진단[Patrol],예방정비,법정검사/신고
-# # df[df["서비스LV1"] == "관리"]       # 센터업무 > 작업명 ==> 데이터 누락/오류분 과다
-# # df[df["서비스LV1"] == "PM"]        # 회계관리 > 작업명 ==> YTN센터 1개센터만 DATA 존재
-# df = df[~df["총작업시간(분)"].isna()]
+# size: 251602 x 36
 
 # 파악 ----------------------
-df.columns
-df.head()
+
 df.info()
 df.count()   # NaN이 아닌 데이터의 수
-
-df["서비스LV2"].unique()
-df["개별설비/장소"].unique()
-df["총작업시간(분)"].sum()
-df["총작업시간(분)"].describe()
-df[df["총작업시간(분)"] == 128700]
-
-# 확인용 엑셀 저장 -----
-# k.to_excel(r"C:\Users\Administrator\Desktop\k.xlsx", index=False)
+df.columns
+df["총작업시간(분)_E"].isna().sum()
+df["총작업시간(분)_E"].describe()
+df["총작업시간(분)_E"].sum()
 
 # 그룹핑 파악 ----------------------
 re = df.copy()
 
+re["서비스LV2"].unique()
+re["표준설비"].unique()
+
 # ("분류", "서비스LV2")
 result_df = (
-    re.groupby(["분류", "서비스LV2"])["총작업시간(분)"]
+    re.groupby(["분류", "서비스LV2"])["총작업시간(분)_E"]
     .agg(총작업시간_분="sum", 작업건수="count")
     .reset_index()
 )
@@ -50,22 +52,20 @@ result_df = (
 # 분류별 총작업시간이 가장 많은 상위 5개 추출
 top5_df = (
     result_df.groupby("분류", group_keys=False)
-    .apply(lambda x: x.nlargest(5, "총작업시간_분"))
+    .apply(lambda x: x.nlargest(3, "총작업시간_분"))
     .reset_index(drop=True)
 )
 
-
-
 # ("운영센터", "서비스LV2")
 result_df = (
-    re.groupby(["운영센터명", "서비스LV2"])["총작업시간(분)"]
+    re.groupby(["운영센터", "서비스LV2"])["총작업시간(분)_E"]
     .agg(총작업시간_분="sum", 작업건수="count")
     .reset_index()
 )
 
-# ("운영센터", "개별설비/장소")
+# ("운영센터", "표준설비")
 result_df = (
-    re.groupby(["운영센터명", "개별설비/장소"])["총작업시간(분)"]
+    re.groupby(["운영센터", "표준설비"])["총작업시간(분)_E"]
     .agg(총작업시간_분="sum", 작업건수="count")
     .reset_index()
 )
@@ -73,9 +73,13 @@ result_df = (
 result_df
 
 # 저장 ----------------------
-# result.to_excel(r"C:\Users\Administrator\Desktop\시설_LV2_분석_{datetime.now().strftime('%y%m%d%H%M%S')}.xlsx", index=False)
-# result.to_excel(r"C:\Users\Administrator\Desktop\시설_개별설비_분석_{datetime.now().strftime('%y%m%d%H%M%S')}.xlsx", index=False)
-# result.to_excel(r"C:\Users\Administrator\Desktop\관리_작업명_분석_{datetime.now().strftime('%y%m%d%H%M%S')}.xlsx", index=False)
+
+# result.to_parquet(r"C:\Users\Administrator\Desktop\●통합데이터_세부.parquet",
+#               index=False,
+#               engine="pyarrow"
+#              )
+
+# result.to_excel(r"C:\Users\Administrator\Desktop\●통합데이터_세부.xlsx", index=False)
 
 # 시각화 ----------------------
 
@@ -91,7 +95,7 @@ from plotly.subplots import make_subplots
 # 1. 분석 기준 컬럼 및 운영센터 순서 설정
 # =========================================================================
 
-target_col = "개별설비/장소"
+target_col = "표준설비"
 # target_col = "서비스LV2"
 
 center_order = [
