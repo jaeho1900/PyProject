@@ -1,114 +1,88 @@
 # ======================
-# 폴더 안의 모든 파일을 하나의 DataFrame으로 통합
+# 특정 폴더 속의 모든 파일을 하나의 DataFrame으로 통합
 # ======================
 
-import pandas as pd
-from pathlib import Path
 import tkinter as tk
+from pathlib import Path
 from tkinter import filedialog
+import pandas as pd
 
 # 1. 폴더 선택 창 열기
 root = tk.Tk()
 root.withdraw()
+root.attributes("-topmost", True)  # 선택 창이 다른 창 뒤에 숨지 않도록 최상단 고정
 
-folder_selected = filedialog.askdirectory(
-    title="Excel 파일이 있는 폴더를 선택하세요"
-)
+folder_selected = filedialog.askdirectory(title="Excel 파일이 있는 폴더를 선택하세요")
+root.destroy()
 
 if not folder_selected:
     print("폴더가 선택되지 않았습니다.")
 else:
     folder_path = Path(folder_selected)
 
-    # 2. Excel 파일 목록 가져오기
+    # 2. Excel 파일 목록 가져오기 (엑셀 임시 파일 '~$' 및 이전 통합 파일 제외)
     excel_files = [
         file_path
         for file_path in folder_path.iterdir()
         if file_path.suffix.lower() in [".xlsx", ".xls"]
+        and not file_path.name.startswith("~$")
+        and file_path.name not in ["통합데이터.xlsx", "통합데이터.parquet"]
     ]
 
     if not excel_files:
-        print("선택한 폴더에 Excel 파일이 없습니다.")
+        print("선택한 폴더에 유효한 Excel 파일이 없습니다.")
     else:
         dataframes = []
 
         # 3. 모든 Excel 파일과 시트 읽기
         for file_path in excel_files:
             try:
-                # sheet_name=None: 모든 시트를 딕셔너리 형태로 읽음
-                sheets = pd.read_excel(
-                    file_path,
-                    sheet_name=None
-                )
+                # sheet_name=None: 모든 시트를 딕셔너리 형태로 로드
+                sheets = pd.read_excel(file_path, sheet_name=None)
 
                 for sheet_name, df in sheets.items():
-
-                    # 완전히 빈 데이터프레임 제외
                     if df.empty:
                         continue
 
-                    # 출처 정보 추가
+                    # 원본 출처 컬럼 추가
                     df["원본파일명"] = file_path.name
-                    df["시트명"] = sheet_name
+                    df["시트명"] = str(sheet_name)
 
                     dataframes.append(df)
 
                 print(f"읽기 완료: {file_path.name}")
 
             except Exception as error:
-                print(f"읽기 실패: {file_path.name}")
-                print(f"오류 내용: {error}")
+                print(f"읽기 실패: {file_path.name} | 오류: {error}")
 
         # 4. 데이터프레임 통합
         if dataframes:
-            combined_df = pd.concat(
-                dataframes,
-                ignore_index=True
+            combined_df = pd.concat(dataframes, ignore_index=True)
+
+            # 5. 저장 경로 지정
+            parquet_path = folder_path / "통합데이터.parquet"
+            excel_path = folder_path / "통합데이터.xlsx"
+
+            # Parquet 저장을 위한 혼합 컬럼 타입 처리 (열 이름 문자열 변환)
+            combined_df.columns = combined_df.columns.astype(str)
+
+            # 컬럼명의 줄바꿈(\n) 제거
+            combined_df.columns = (
+                combined_df.columns
+                .astype(str)
+                .str.replace("\n", " ", regex=False)
+                .str.strip()
             )
 
-            # 5. Parquet 파일 저장
-            output_path = folder_path / "통합데이터.parquet"
+            # 파일 저장
+            combined_df.to_parquet(parquet_path, index=False, engine="pyarrow")
+            combined_df.to_excel(excel_path, index=False)
 
-            combined_df.to_parquet(
-                output_path,
-                index=False,
-                engine="pyarrow"
-            )
-
-            # combined_df.to_excel(folder_path / "통합데이터.xlsx", index=False)
-
-            print("\n통합 완료")
+            print("\n" + "=" * 30)
+            print("통합 완료")
             print(f"행 개수: {len(combined_df):,}")
             print(f"열 개수: {len(combined_df.columns):,}")
-            print(f"저장 위치: {output_path}")
-
+            print(f"저장 위치: {folder_path}")
+            print("=" * 30)
         else:
-            print("통합할 데이터가 없습니다.")
-
-# 총작업시간(분) 수정 ----------------------
-
-# 시작일 ~ 완료일 작업을 24시간 작업으로 처리된 부분을 1일 8시간으로 수정
-
-# 숫자형 변환 및 결측치 처리 (공란인 경우 0으로 처리)
-df['작업시간(분)'] = pd.to_numeric(df['작업시간(분)'], errors='coerce').fillna(0)
-df['총작업시간(분)'] = pd.to_numeric(df['총작업시간(분)'], errors='coerce').fillna(0)
-
-# 작업시간(분) 기준 보정 시간 계산
-step1_calc = np.select(
-    [
-        df['작업시간(분)'] <= 480,
-        (df['작업시간(분)'] > 480) & (df['작업시간(분)'] <= 1440),
-        df['작업시간(분)'] > 1440
-    ],
-    [
-        df['작업시간(분)'],
-        480,
-        df['작업시간(분)'] - ((df['작업시간(분)'] // 1440) * 960)
-    ],
-    default=0
-)
-
-# 총작업시간 // 작업시간) * 1단계 결과 계산하여 '총작업시간(분)_E' 컬럼 생성
-# 작업시간이 0인 경우 0으로 처리하여 ZeroDivisionError 방지
-multiplier = np.where(df['작업시간(분)'] > 0, df['총작업시간(분)'] // df['작업시간(분)'], 0)
-df['총작업시간(분)_E'] = multiplier * step1_calc
+            print("통합할 유효 데이터가 없습니다.")
