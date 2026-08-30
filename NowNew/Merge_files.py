@@ -1,5 +1,5 @@
 # ======================
-# 특정 폴더 속의 모든 파일을 하나의 DataFrame으로 통합
+# 폴더의 모든 파일을 DataFrame 1개로 통합
 # ======================
 
 import tkinter as tk
@@ -63,10 +63,8 @@ else:
             parquet_path = folder_path / "통합데이터.parquet"
             excel_path = folder_path / "통합데이터.xlsx"
 
-            # Parquet 저장을 위한 혼합 컬럼 타입 처리 (열 이름 문자열 변환)
-            combined_df.columns = combined_df.columns.astype(str)
-
-            # 컬럼명의 줄바꿈(\n) 제거
+            # Parquet 저장을 위한 혼합 컬럼 타입 처리 (열 이름 문자열 변환) 및
+            # 컬럼명의 줄바꿈(\n) 제거 (옵션)
             combined_df.columns = (
                 combined_df.columns
                 .astype(str)

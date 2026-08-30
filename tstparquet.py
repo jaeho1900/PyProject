@@ -1,5 +1,6 @@
 # ======================
-# atG 작업관리 분석 (오피스 및 연구소)
+# atG 작업관리 분석
+# (오피스 및 연구소)
 # ======================
 
 import numpy as np
@@ -9,25 +10,29 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 # 필터링 ----------
-# df[df["서비스LV1"] == "시설"]   # 검침,보수,운전,점검,시설순찰,진단[Patrol],예방정비,법정검사/신고
-# df[df["서비스LV1"] == "관리"]   # 센터업무 > 작업명 ==> 데이터 누락/오류분 과다
-# df[df["서비스LV1"] == "PM"]     # 회계관리 > 작업명 ==> YTN센터 1개센터만 DATA 존재
-# df[df["총작업시간(분)"].isna()] # 미운전설비, 작업발행오류 등
+# df[df["서비스LV1"] == "시설"]   # 검침,보수,운전,점검,시설순찰,진단[Patrol],예방정비,법정검사/신고 선정
+# df[df["서비스LV1"] == "관리"]   # 센터업무 > 작업명 ==> 데이터 누락/오류분 과다로 제외
+# df[df["서비스LV1"] == "PM"]     # 회계관리 > 작업명 ==> YTN센터 1개센터만 DATA 존재로 제외
+# df[df["총작업시간(분)"].isna()] # 미운전설비, 작업발행오류 등으로 제외
 
 # 호출 ----------------------
-file_path = r"C:\Users\Administrator\Desktop\●통합데이터.parquet"
+# file_path = r"C:\Users\Administrator\Desktop\●통합데이터.parquet"
 file_path = r"C:\Users\Thanki\Desktop\com\●통합데이터.parquet"
 df = pd.read_parquet(file_path, engine="pyarrow", dtype_backend="pyarrow")
 # size: 251602 x 36
 
 # 파악 ----------------------
-
 df.info()
-df.count()   # NaN이 아닌 데이터의 수
 df.columns
 df["총작업시간(분)_E"].isna().sum()
 df["총작업시간(분)_E"].describe()
-df["총작업시간(분)_E"].sum()
+
+
+
+
+
+
+
 
 # 그룹핑 파악 ----------------------
 re = df.copy()
