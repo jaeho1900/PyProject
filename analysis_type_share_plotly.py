@@ -4,12 +4,11 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 # ------------------------------------------------------------
 # 0. 설정
 # ------------------------------------------------------------
-INPUT = Path(r'C:\Users\Thanki\Desktop\Integrated_data.xlsx')
+INPUT = Path(r'C:\Users\Administrator\Desktop\home\Integrated_data.parquet')
 OUTDIR = INPUT.parent / 'analysis_type_share_plotly'
 OUTDIR.mkdir(parents=True, exist_ok=True)
 # os.makedirs(OUTDIR, exist_ok=True)
@@ -26,9 +25,9 @@ TOP_N_SERVICE = 12
 TOP_N_EQUIPMENT = 20
 
 # ------------------------------------------------------------
-# 1. 원자료 적재 및 기본 정제
+# 1. 데이터 적재 및 정제
 # ------------------------------------------------------------
-df = pd.read_excel(INPUT)
+df = pd.read_parquet(INPUT, engine='pyarrow', dtype_backend='pyarrow')
 df = df.copy()
 df[RECORD_ID] = np.arange(len(df))
 

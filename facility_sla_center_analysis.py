@@ -17,7 +17,7 @@ from plotly.subplots import make_subplots
 # ============================================================
 # 0. 설정
 # ============================================================
-DATA_PATH = Path(r'C:\Users\Thanki\Desktop\Integrated_data.xlsx')
+DATA_PATH =Path(r'C:\Users\Administrator\Desktop\home\Integrated_data.parquet')
 OUTPUT_DIR = DATA_PATH.parent / 'facility_sla_analysis'
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -74,7 +74,7 @@ def safe_divide(numerator, denominator):
 # ============================================================
 # 1. 데이터 적재·공통 정제
 # ============================================================
-df = pd.read_excel(DATA_PATH)
+df = pd.read_parquet(DATA_PATH, engine='pyarrow', dtype_backend='pyarrow')
 df = df.copy()
 df['_row_id'] = np.arange(len(df))
 
