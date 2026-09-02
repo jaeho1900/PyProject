@@ -1,8 +1,9 @@
-"""Integrated_data의 분류(연구소/오피스)별 표준설비 평가순위 TOP50
-- 각 분류 안에서 중요도·업무부하·관리빈도·품질성과를 계산
-- 각 분류의 전체평가순위 TOP50을 우선 선정
+"""
+연구소, 오피스별 표준설비 평가순위 TOP50
+- 각 분류 안에서 설비중요도·업무부하·관리빈도·품질성과를 계산
+- 각 분류의 전체평가순위 TOP50을 선정
 - 해당 분류에 존재하는 모든 설비분류LV1을 포함하고, 각 LV1 최소 2개 보장
-- 정확히 50개를 유지하도록 낮은 순위 설비를 교체
+- 정확히 50개를 유지하도록 낮은 순위 설비를 대체
 """
 from pathlib import Path
 import numpy as np
@@ -103,8 +104,9 @@ def summarize(top50):
         포함설비수=('표준설비', 'nunique'), 작업건수=('작업건수', 'sum'), 총작업시간_분_E=('총작업시간_분_E', 'sum'),
         평균종합점수=('종합우선순위점수', 'mean'), 최고평가순위=('전체평가순위', 'min')
     ).reset_index().sort_values('평균종합점수', ascending=False)
-    s['작업건수_비중(%)'] = s['작업건수'] / s['작업건수'].sum() * 100
-    s['작업시간_비중(%)'] = s['총작업시간_분_E'] / s['총작업시간_분_E'].sum() * 100
+    s["평균종합점수"] = s["평균종합점수"].round(2)
+    s['작업건수_비중(%)'] = (s['작업건수'] / s['작업건수'].sum() * 100).round(2)
+    s['작업시간_비중(%)'] = (s['총작업시간_분_E'] / s['총작업시간_분_E'].sum() * 100).round(2)
     s['최소2개_충족여부'] = s['포함설비수'].ge(MIN_PER_LV1)
     return s
 
@@ -116,16 +118,93 @@ def run(data, class_name):
     p.to_csv(OUTPUT_DIR / f'{prefix}_전체평가순위.csv', index=False, encoding='utf-8-sig')
     t.to_csv(OUTPUT_DIR / f'{prefix}_TOP50_분류보정.csv', index=False, encoding='utf-8-sig')
     s.to_csv(OUTPUT_DIR / f'{prefix}_TOP50_설비분류LV1_요약.csv', index=False, encoding='utf-8-sig')
-    plot = s.sort_values('포함설비수')
-    fig = px.bar(plot, x='포함설비수', y='설비분류LV1', orientation='h', text='포함설비수', color='평균종합점수', color_continuous_scale='Blues', title=f'{class_name} 표준설비 평가순위 TOP50 - 설비분류LV1 구성', labels={'포함설비수':'TOP50 포함 설비 수','설비분류LV1':'설비분류LV1','평균종합점수':'평균 종합점수'})
-    fig.update_traces(textposition='outside')
-    fig.update_layout(template='plotly_white', height=500, coloraxis_showscale=False)
-    fig.write_html(OUTPUT_DIR / f'{prefix}_TOP50_설비분류LV1.html', include_plotlyjs='cdn')
+
+    plot = s.sort_values("포함설비수", ascending=False).copy()
+    bar_order = plot["설비분류LV1"].tolist()
+
+    # Legend도 막대그래프와 동일한 순서로 설정
+    plot["Legend"] = plot.apply(
+        lambda row: (
+            f"{row['설비분류LV1']} "
+            f"({row['평균종합점수']:.2f})"
+        ),
+        axis=1
+    )
+    legend_order = plot["Legend"].tolist()
+
+    legend_color_map = {
+        row["Legend"]: LV1_COLOR_MAP[row["설비분류LV1"]]
+        for _, row in plot.iterrows()
+    }
+
+    fig = px.bar(
+        plot,
+        x="포함설비수",
+        y="설비분류LV1",
+        orientation="h",
+        text="포함설비수",
+        color="Legend",
+        color_discrete_map=legend_color_map,
+        category_orders={"Legend": legend_order},
+        title=(
+            f"{class_name} 표준설비 평가순위 TOP50 - "
+            "설비분류LV1 구성"
+        ),
+        labels={
+            "포함설비수": "TOP50 포함 설비 수",
+            "설비분류LV1": "설비분류LV1",
+            "Legend": "평균 종합점수"
+        }
+    )
+
+    fig.update_traces(
+        textposition="outside",
+        hovertemplate=(
+            "설비분류LV1: %{y}<br>"
+            "TOP50 포함 설비 수: %{x}<br>"
+            "<extra></extra>"
+        )
+    )
+
+    fig.update_layout(
+        template="plotly_white",
+        height=500,
+        yaxis=dict(
+            categoryorder="array",
+            categoryarray=bar_order[::-1]
+        ),
+        legend=dict(
+            title="평균 종합점수",
+            traceorder="normal"
+        )
+    )
+    fig.write_html(
+        OUTPUT_DIR / f"{prefix}_TOP50_설비분류LV1.html",
+        include_plotlyjs="cdn"
+    )
     return p, t, s
 
 df = pd.read_parquet(DATA_PATH, engine='pyarrow', dtype_backend='pyarrow')
+
 for col in ['분류','표준설비','설비분류LV1']:
     df[col] = df[col].astype('string').str.strip()
+
+# 설비분류LV1별 고정 색상
+lv1_list = (
+    df["설비분류LV1"]
+    .dropna()
+    .astype(str)
+    .str.strip()
+    .drop_duplicates()
+    .sort_values()
+    .tolist()
+)
+color_palette = px.colors.qualitative.Set2
+LV1_COLOR_MAP = {
+    lv1: color_palette[i % len(color_palette)]
+    for i, lv1 in enumerate(lv1_list)
+}
+
 for class_name in CLASS_LIST:
     p, t, s = run(df, class_name)
     print(f'\n[{class_name}] 설비분류LV1 요약')
