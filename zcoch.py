@@ -1,11 +1,10 @@
-import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 file_path = (
-    r"C:\Users\Administrator\Desktop\오피스_연구소_엣지_작업데이터_통합.parquet"
+    r"C:\Users\Administrator\Desktop\Integrated_data.parquet"
 )
 df = pd.read_parquet(file_path)
 
