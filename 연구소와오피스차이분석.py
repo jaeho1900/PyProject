@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 # ------------------------------------------------------------
 # 0. 설정
 # ------------------------------------------------------------
-INPUT = Path(r'C:\Users\Administrator\Desktop\home\Integrated_data.parquet')
+INPUT = Path(r'C:\Users\Administrator\Desktop\Integrated_data.parquet')
 OUTDIR = INPUT.parent / 'analysis_type_share_plotly'
 OUTDIR.mkdir(parents=True, exist_ok=True)
 # os.makedirs(OUTDIR, exist_ok=True)

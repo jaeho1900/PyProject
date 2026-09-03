@@ -3,7 +3,6 @@
 - 각 분류 안에서 설비중요도·업무부하·관리빈도·품질성과를 계산
 - 각 분류의 전체평가순위 TOP50을 선정
 - 해당 분류에 존재하는 모든 설비분류LV1을 포함하고, 각 LV1 최소 2개 보장
-- 정확히 50개를 유지하도록 낮은 순위 설비를 대체
 """
 from pathlib import Path
 import numpy as np
@@ -117,7 +116,7 @@ def run(data, class_name):
     prefix = f'{class_name}_표준설비'
     p.to_csv(OUTPUT_DIR / f'{prefix}_전체평가순위.csv', index=False, encoding='utf-8-sig')
     t.to_csv(OUTPUT_DIR / f'{prefix}_TOP50_분류보정.csv', index=False, encoding='utf-8-sig')
-    s.to_csv(OUTPUT_DIR / f'{prefix}_TOP50_설비분류LV1_요약.csv', index=False, encoding='utf-8-sig')
+    s.to_csv(OUTPUT_DIR / f'{prefix}_TOP50_설비분류_요약.csv', index=False, encoding='utf-8-sig')
 
     plot = s.sort_values("포함설비수", ascending=False).copy()
     bar_order = plot["설비분류LV1"].tolist()
@@ -147,21 +146,21 @@ def run(data, class_name):
         color_discrete_map=legend_color_map,
         category_orders={"Legend": legend_order},
         title=(
-            f"{class_name} 표준설비 평가순위 TOP50 - "
-            "설비분류LV1 구성"
+            f"{class_name} 표준설비 TOP50 - "
+            "설비분류별"
         ),
         labels={
-            "포함설비수": "TOP50 포함 설비 수",
-            "설비분류LV1": "설비분류LV1",
-            "Legend": "평균 종합점수"
+            "포함설비수": "TOP50 표준설비 수",
+            "설비분류LV1": "설비분류",
+            "Legend": "종합점수 평균"
         }
     )
 
     fig.update_traces(
         textposition="outside",
         hovertemplate=(
-            "설비분류LV1: %{y}<br>"
-            "TOP50 포함 설비 수: %{x}<br>"
+            "설비분류: %{y}<br>"
+            "TOP50 표준설비 수: %{x}<br>"
             "<extra></extra>"
         )
     )
@@ -174,12 +173,12 @@ def run(data, class_name):
             categoryarray=bar_order[::-1]
         ),
         legend=dict(
-            title="평균 종합점수",
+            title="종합점수 평균",
             traceorder="normal"
         )
     )
     fig.write_html(
-        OUTPUT_DIR / f"{prefix}_TOP50_설비분류LV1.html",
+        OUTPUT_DIR / f"{prefix}_TOP50_설비분류.html",
         include_plotlyjs="cdn"
     )
     return p, t, s

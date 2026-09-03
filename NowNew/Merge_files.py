@@ -1,6 +1,6 @@
-# ======================
+"""
 # 폴더의 모든 파일을 DataFrame 1개로 통합
-# ======================
+"""
 
 import tkinter as tk
 from pathlib import Path
