@@ -1,6 +1,7 @@
 """
-연구소, 오피스별 표준설비 평가순위 TOP50
+연구소, 오피스별 표준설비 TOP50
 """
+
 from pathlib import Path
 import numpy as np
 import pandas as pd

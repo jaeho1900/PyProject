@@ -1,18 +1,18 @@
-"""트윈타워 표준설비 평가순위 TOP50의 설비분류LV1 분류 분석
-- 기존 우선순위 모형: 중요도·업무부하·관리빈도·품질성과
-- TOP50을 먼저 선정한 뒤, 설비분류LV1별 최소 2개 조건을 보정
-- 정확히 50개를 유지하도록 과다 대표 분류의 최하위 순위를 교체
 """
+특정 운영센터 표준설비 중요도 평가
+- 중요도·업무부하·관리빈도·품질성과 종합 평가
+- TOP50을 먼저 선정한 뒤, 설비분류LV1별 최소 2개 조건으로 보정
+"""
+
 from pathlib import Path
 import numpy as np
 import pandas as pd
 import plotly.express as px
 
-# Windows 11에서 수정할 부분
-DATA_PATH = Path(r'C:\Users\사용자명\Downloads\Integrated_data.xlsx')
-# 예: DATA_PATH = Path(__file__).resolve().parent / 'Integrated_data.xlsx'
+DATA_PATH = Path(r'C:\Users\Administrator\Desktop\Integrated_data.parquet')
 OUTPUT_DIR = DATA_PATH.parent / 'facility_sla_analysis'
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
 center = '트윈타워'
 
 VALID_STATUSES = ['작업완료', '지연완료']
@@ -21,23 +21,18 @@ SAFETY_4 = ['전기', '분전반', 'MCC', '모터컨트롤', '냉동기', '보�
 OPERATION_5 = ['MAIN', '차단기', '변압기', '발전기', 'UPS', '배터리', '수신기', '소화펌프', '냉동기', '냉각탑', '공기조화기', '보일러']
 OPERATION_4 = ['SUB', '분전반', 'MCC', '모터컨트롤', '방화', '소화', '감지', '발신기', '가스']
 
-
 def contains_any(value, keywords):
     text = '' if pd.isna(value) else str(value).upper()
     return any(k.upper() in text for k in keywords)
 
-
 def safety_score(value):
     return 5 if contains_any(value, SAFETY_5) else 4 if contains_any(value, SAFETY_4) else 2
-
 
 def operation_score(value):
     return 5 if contains_any(value, OPERATION_5) else 4 if contains_any(value, OPERATION_4) else 2
 
-
 def percentile_score(series):
     return series.rank(method='average', pct=True) * 100
-
 
 def get_priority_table(data):
     data = data[data['표준설비'].notna()].copy()
@@ -88,7 +83,6 @@ def get_priority_table(data):
     r['전체평가순위'] = np.arange(1, len(r) + 1)
     return r
 
-
 def select_top50_with_minimum_by_class(priority, class_col='설비분류LV1', top_n=50, minimum=2):
     """정확히 top_n개를 유지하면서 분류별 최소 minimum개를 보장한다."""
     selected = priority.head(top_n).copy()
@@ -123,8 +117,7 @@ def select_top50_with_minimum_by_class(priority, class_col='설비분류LV1', to
     selected['보정후순위'] = np.arange(1, len(selected) + 1)
     return selected
 
-
-df = pd.read_excel(DATA_PATH)
+df = pd.read_parquet(DATA_PATH, engine='pyarrow', dtype_backend='pyarrow')
 center_df = df[df['운영센터'].eq(center)].copy()
 priority = get_priority_table(center_df)
 top50 = select_top50_with_minimum_by_class(priority, top_n=50, minimum=2)
@@ -146,18 +139,69 @@ top50.to_csv(OUTPUT_DIR / f'{center}_표준설비_TOP50_분류보정.csv', index
 group_summary.to_csv(OUTPUT_DIR / f'{center}_표준설비_TOP50_설비분류LV1_요약.csv', index=False, encoding='utf-8-sig')
 
 # 시각화: 분류별 TOP50 포함 설비 수
-fig = px.bar(
-    group_summary.sort_values('포함설비수'),
-    x='포함설비수', y='설비분류LV1', orientation='h',
-    text='포함설비수', color='평균종합점수', color_continuous_scale='Blues',
-    title=f'{center} 표준설비 평가순위 TOP50 - 설비분류LV1별 구성',
-    labels={'포함설비수': 'TOP50 포함 설비 수', '설비분류LV1': '설비분류LV1', '평균종합점수': '평균 종합점수'}
-)
-fig.update_traces(textposition='outside')
-fig.update_layout(template='plotly_white', height=500, coloraxis_showscale=False)
-fig.write_html(OUTPUT_DIR / f'{center}_표준설비_TOP50_설비분류LV1.html', include_plotlyjs='cdn')
+plot_df = group_summary.sort_values(by="포함설비수", ascending=False).copy()
+plot_df["평균종합점수_라벨"] = plot_df["평균종합점수"].apply(lambda x: f"{x:.2f}")
 
-print('[TOP50 설비분류LV1별 요약]')
-print(group_summary.to_string(index=False))
-print('\n[TOP50 목록]')
-print(top50[['보정후순위', '전체평가순위', '설비분류LV1', '표준설비', '종합우선순위점수', '_selected_reason']].to_string(index=False))
+fig = px.bar(
+    plot_df,
+    x="포함설비수",
+    y="설비분류LV1",
+    orientation="h",
+    text="포함설비수",
+    color="평균종합점수_라벨",
+    title=f"{center} 표준설비 TOP50 - 설비분류별",
+    labels={
+        "포함설비수": "TOP50 표준설비 수",
+        "설비분류LV1": "설비분류",
+        "평균종합점수_라벨": "종합점수 평균",
+    },
+)
+fig.update_traces(textposition="outside")
+
+fig.update_layout(
+    template="plotly_white",
+    height=500,
+    yaxis=dict(autorange="reversed"),                       # 소방설비가 맨 위에 오도록 순서 반전
+    legend=dict(title="종합점수 평균", traceorder="normal"),  # 상단 막대 순서와 범례 순서 일치
+)
+fig.write_html(OUTPUT_DIR / f'{center}_설비분류_TOP50.html', include_plotlyjs='cdn')
+
+# --------------------------------------------
+# Plotly: 상위 20개
+
+plot2 = top50.head(20).copy()
+plot2["설비중요도점수"] = plot2["설비중요도점수"].astype(float)
+plot2_sorted = plot2.sort_values(by="보정후순위", ascending=False)
+
+fig2 = px.bar(
+    plot2_sorted,
+    x="종합우선순위점수",
+    y="표준설비",
+    orientation="h",
+    color="설비중요도점수",
+    text="종합우선순위점수",
+    color_continuous_scale="Blues",
+    title=f"{center} 표준설비 TOP20",
+    labels={
+        "종합우선순위점수": "종합 점수",
+        "표준설비": "표준설비",
+        "설비중요도점수": "설비 중요도 점수",
+    },
+    hover_data=[
+        "작업건수",
+        "총작업시간_시간_E",
+        "이행률",
+        "지연률",
+        "업무부하점수",
+        "관리빈도점수",
+    ],
+)
+
+fig2.update_traces(texttemplate="%{text:.1f}", textposition="outside")
+fig2.update_layout(
+    template="plotly_white",
+    height=700,
+    coloraxis_showscale=False,  # 우측 컬러바 숨김
+    xaxis=dict(range=[0, 105]),  # 우측 점수 라벨이 잘리지 않도록 여유 공간 확보
+)
+fig2.write_html(OUTPUT_DIR / f'{center}_표준설비_TOP20.html', include_plotlyjs='cdn')
