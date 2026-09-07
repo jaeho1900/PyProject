@@ -2,12 +2,9 @@
 # 입력: madam, 출력: True
 # 입력: tomato, 출력: False
 
-# 코파일러 끄기
 a = input("문장을 입력하세요: ")
 
-k= len(a)//2
-
-if a[:k] == a[::-1][:k]:
+if a == a[::-1]:
     print("True")
 else:
     print("False")
