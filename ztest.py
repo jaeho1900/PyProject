@@ -5,8 +5,10 @@
 
 a = [1, 0, 1, 1, 1, 1, 1, 0, 0, 0]
 
+k = len(a)
 for i in range(len(a)):
     if a[i] == 1:
-        a.append(a.pop(i))
+        a.append(1)
+    a1 = a[k:]
 print(a)
 
