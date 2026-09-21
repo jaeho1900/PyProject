@@ -206,6 +206,8 @@ def work_play1(combined_df, folder_path):
     )
     fig1.write_html(folder_path / '표준설비_TOP50.html', include_plotlyjs='cdn')
 
+    return top50
+
 
 def work_play2(combined_df, folder_path):
     facility_summary = (
@@ -239,6 +241,46 @@ def work_play2(combined_df, folder_path):
         template="plotly_white", height=600
     )
     fig2.write_html(folder_path / '표준설비_공수_패턴.html', include_plotlyjs='cdn')
+
+
+def work_play3(combined_df, top50, folder_path):
+    """
+    top50의 '표준설비' 항목을 추출하여 combined_df에서
+    작업명과 주기가 존재하는 항목만 추출 후 내림차순 정렬하여 엑셀 저장
+    """
+    # 1. top50 (B 데이터프레임)의 '표준설비' 목록 추출
+    target_equipments = top50['표준설비'].dropna().unique()
+
+    # 2. combined_df (A 데이터프레임) 조건 필터링: 표준설비 존재 & 주기가 NaN이 아닌 행
+    filtered_df = combined_df[
+        (combined_df['표준설비'].isin(target_equipments)) &
+        (combined_df['주기'].notna())
+    ].copy()
+
+    # 3. 필요한 컬럼만 추출 및 중복 제거
+    columns_to_keep = ['설비분류LV1', '표준설비', '작업명', '주기']
+    # 서비스LV2 컬럼이 존재하는 경우 함께 포함, 없으면 4개 컬럼 기준 유지
+    if '서비스LV2' in filtered_df.columns:
+        columns_to_keep.insert(2, '서비스LV2')
+
+    result_df = filtered_df[columns_to_keep].drop_duplicates().reset_index(drop=True)
+
+    # 4. 참조1 정렬 규칙 적용 (데이터 개수 기준 내림차순 정렬)
+    result_df['LV1_count'] = result_df.groupby('설비분류LV1')['설비분류LV1'].transform('count')
+    result_df['LV2_count'] = result_df.groupby(['설비분류LV1', '표준설비'])['표준설비'].transform('count')
+
+    result_df = result_df.sort_values(
+        by=['LV1_count', '설비분류LV1', 'LV2_count', '표준설비'],
+        ascending=[False, True, False, True]
+    ).reset_index(drop=True)
+
+    # 임시 계산용 count 컬럼 제거
+    result_df = result_df.drop(columns=['LV1_count', 'LV2_count'])
+
+    # 5. 엑셀 파일로 저장
+    output_excel_path = folder_path / '표준설비_작업_주기_리스트.xlsx'
+    result_df.to_excel(output_excel_path, index=False)
+    print(f"작업/주기 리스트 저장 완료: {output_excel_path.name}")
 
 
 def main():
@@ -324,8 +366,11 @@ def main():
     combined_df.to_excel(output_path, index=False)
 
     # 분석 및 시각화 수행
-    work_play1(combined_df, folder_path)
+    top50 = work_play1(combined_df, folder_path)
     work_play2(combined_df, folder_path)
+
+    # 추가된 요구사항 반영 (result_df 생성, 내림차순 정렬 및 엑셀 저장)
+    work_play3(combined_df, top50, folder_path)
 
     print("\n" + "=" * 30)
     print("통합 완료")
