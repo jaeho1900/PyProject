@@ -4,7 +4,6 @@
 # 입력: [1, 1], 출력: [1, 1]
 
 a = [1, 0, 1, 1, 1, 1, 1, 0, 1, 0]
-a = [1, 1]
 
 b = []
 for i in range(len(a)):
@@ -13,3 +12,15 @@ for i in range(len(a)):
     else:
         b.insert(0, a.pop(0))
 print(b)
+
+
+left, right = 0, len(a) - 1
+while left < right:
+    if a[left] == 0:
+        left += 1
+    elif a[right] == 1:
+        right -= 1
+    else:
+        a[left], a[right] = a[right], a[left]
+        left += 1
+        right -= 1
