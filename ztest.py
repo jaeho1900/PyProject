@@ -1,26 +1,41 @@
-# 0과 1로 이루어진 배열이 있다. 배열 자체를 오름차순으로 정렬하라.
+# 정렬되지 않은 양의 정수로 이루어진 배열 A가 있다. 연속된 원소를 더한 값이 제시된 값 S와 같은 부분 배열을 찾아라. (인덱스 기준은 1이다.)
+# 입력: arr = [1, 2, 3, 7, 5], s = 12, 출력: [2, 4]
+    # 인덱스 2부터 4까지의 합: 2 + 3 + 7 = 12
+# 입력: arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], s = 15, 출력: [1, 5]
 
-# 입력: [1, 0, 1, 1, 1, 1, 1, 0, 0, 0], 출력: [0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
-# 입력: [1, 1], 출력: [1, 1]
 
-a = [1, 0, 1, 1, 1, 1, 1, 0, 1, 0]
+arr = [1, 2, 3, 7, 5]
+s = 12
+st = 0
+la = 0
+total = 0
+total2 = 0
 
-b = []
-for i in range(len(a)):
-    if a[0] == 1:
-        b.append(a.pop(0))
+for i in range(len(arr)):
+    if sum(arr[i:len(arr)]) == s:
+        print(len(arr)-i)
+
+
+for i in range(st, len(arr)):
+    total += arr[i]
+    if total == s:
+        print(total)
+        break
+    elif total > s:
+        st += 1
+        for i in range(st, len(arr)):
+            total2 += arr[i]
+            if total2 == s:
+                print(total2)
+                break
+            elif total2 > s:
+                st += 1
+                break
+            else:
+                continue
+        break
     else:
-        b.insert(0, a.pop(0))
-print(b)
+        continue
+print(st, total, total2)
 
 
-left, right = 0, len(a) - 1
-while left < right:
-    if a[left] == 0:
-        left += 1
-    elif a[right] == 1:
-        right -= 1
-    else:
-        a[left], a[right] = a[right], a[left]
-        left += 1
-        right -= 1
