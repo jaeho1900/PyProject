@@ -3,39 +3,26 @@
     # 인덱스 2부터 4까지의 합: 2 + 3 + 7 = 12
 # 입력: arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], s = 15, 출력: [1, 5]
 
-
 arr = [1, 2, 3, 7, 5]
 s = 12
-st = 0
-la = 0
+
+s_t = 0
+l_t = 0
+
+1 2 3 7
+2 3 7
+
 total = 0
-total2 = 0
-
 for i in range(len(arr)):
-    if sum(arr[i:len(arr)]) == s:
-        print(len(arr)-i)
-
-
-for i in range(st, len(arr)):
-    total += arr[i]
+    for j in range(i, len(arr)):
+        if total < s:
+            total += arr[j]
+            print("total<s:", total, i, j)
+        else:
+            print("loop1", total, i, j)
+            break
+    total = 0
     if total == s:
-        print(total)
+        print("loop2", total, i, j)
         break
-    elif total > s:
-        st += 1
-        for i in range(st, len(arr)):
-            total2 += arr[i]
-            if total2 == s:
-                print(total2)
-                break
-            elif total2 > s:
-                st += 1
-                break
-            else:
-                continue
-        break
-    else:
-        continue
-print(st, total, total2)
-
-
+print(i+1, j+1)
