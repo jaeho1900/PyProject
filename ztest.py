@@ -9,8 +9,8 @@ s = 12
 s_t = 0
 l_t = 0
 
-1 2 3 7
-2 3 7
+# 1 2 3 7
+# 2 3 7
 
 total = 0
 for i in range(len(arr)):
